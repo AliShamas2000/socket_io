@@ -1,22 +1,19 @@
-
-
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 
 const app = express();
-
 const server = http.createServer(app);
 
 const io = socketIo(server, {
     cors: {
-        origin: "*", // Replace with your specific origin for production
+        origin: "*", // Replace with specific origin for production
         methods: ["GET", "POST"],
     },
 });
 
-const registers = {};
-let connectedClients = 0; // Variable to keep track of connected clients
+const registers = {}; // Store user identifiers and their socket IDs
+let connectedClients = 0; // Track connected clients
 
 app.use(express.json());
 
@@ -26,32 +23,29 @@ io.on("connection", (socket) => {
     console.log(`Total connected clients: ${connectedClients}`);
 
     socket.on("register", (identifier) => {
-        if (!registers[identifier]) {
-            // If the identifier doesn't exist, create a new array
-            registers[identifier] = [socket.id];
-        } else {
-            if (!registers[identifier].includes(socket.id)) {
-                registers[identifier].push(socket.id); // Add socket.id if it doesn't exist
-            }
-            // If it exists, push the new socket ID into the existing array
+        // Initialize array if identifier doesn't exist
+        registers[identifier] = registers[identifier] || [];
+        
+        // Avoid duplicate entries for the same socket ID
+        if (!registers[identifier].includes(socket.id)) {
+            registers[identifier].push(socket.id);
         }
 
-        console.log("Registersss" + JSON.stringify(registers));
+        console.log("Registers: " + JSON.stringify(registers));
     });
 
     socket.on("message", (data) => {
         const targetTo = data.identifier;
-        newArray = [];
-        if (registers['111']) {
-            newArray = registers['111'].filter(socketId => socketId !== targetTo);
-        }
         const payload = data.data;
-        newArray.forEach(socketId => {
-            console.log("TO " + socketId + "Message: " + "HERE");
 
-            io.to(socketId).emit("message", payload);
-
-        });
+        // Ensure the identifier exists in registers before filtering
+        if (registers[targetTo]) {
+            const targetSockets = registers[targetTo].filter(socketId => socketId !== socket.id);
+            targetSockets.forEach(socketId => {
+                console.log(`Sending message to ${socketId}`);
+                io.to(socketId).emit("message", payload);
+            });
+        }
     });
 
     socket.on("disconnect", () => {
@@ -59,12 +53,15 @@ io.on("connection", (socket) => {
         console.log(`Client disconnected: ${socket.id}`);
         console.log(`Total connected clients: ${connectedClients}`);
 
-        for (const [userId, socketId] of Object.entries(registers)) {
-            if (socketId === socket.id) {
-                console.log(`User disconnected: ${userId}`);
-                delete registers[userId];
+        // Loop through registers to remove the disconnected socket ID
+        for (const identifier in registers) {
+            registers[identifier] = registers[identifier].filter(socketId => socketId !== socket.id);
+            if (registers[identifier].length === 0) {
+                delete registers[identifier]; // Clean up empty arrays
             }
         }
+
+        console.log("Updated Registers after disconnect: " + JSON.stringify(registers));
     });
 });
 
