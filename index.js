@@ -12,8 +12,8 @@ const io = socketIo(server, {
   },
 });
 
-const registers = {}; 
-let connectedClients = 0; 
+const registers = {}; // Store user identifiers and their socket IDs
+let connectedClients = 0; // Track connected clients
 
 app.use(express.json());
 
@@ -23,14 +23,26 @@ io.on("connection", (socket) => {
   console.log(`Total connected clients: ${connectedClients}`);
 
   socket.on("register", (identifiers) => {
-    console.log("Identifiers received:", identifiers); 
+    console.log("Identifiers received (raw):", identifiers); 
+
+    // Parse identifiers if it’s a JSON string
+    if (typeof identifiers === "string") {
+      try {
+        identifiers = JSON.parse(identifiers);
+      } catch (error) {
+        console.error("Failed to parse identifiers JSON:", error);
+        return; // Exit if parsing fails
+      }
+    }
+
+    // Ensure identifiers is an array after parsing
     identifiers = Array.isArray(identifiers) ? identifiers : [identifiers];
+    console.log("Parsed Identifiers:", identifiers); // Should log an array like ["436", "437", "445"]
 
-
-    console.log("masere: ", identifiers); 
     identifiers.forEach((identifier) => {
       registers[identifier] = registers[identifier] || [];
 
+      // Avoid duplicate entries for the same socket ID
       if (!registers[identifier].includes(socket.id)) {
         registers[identifier].push(socket.id);
       }
@@ -68,9 +80,7 @@ io.on("connection", (socket) => {
       }
     }
 
-    console.log(
-      "Updated Registers after disconnect: " + JSON.stringify(registers)
-    );
+    console.log("Updated Registers after disconnect: " + JSON.stringify(registers));
   });
 });
 
