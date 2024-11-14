@@ -25,24 +25,22 @@ io.on("connection", (socket) => {
   socket.on("register", (identifiers) => {
     console.log("Identifiers received (raw):", identifiers); 
 
-    // Parse identifiers if it’s a JSON string
     if (typeof identifiers === "string") {
       try {
         identifiers = JSON.parse(identifiers);
       } catch (error) {
         console.error("Failed to parse identifiers JSON:", error);
-        return; // Exit if parsing fails
+        return; 
       }
     }
 
-    // Ensure identifiers is an array after parsing
+
     identifiers = Array.isArray(identifiers) ? identifiers : [identifiers];
-    console.log("Parsed Identifiers:", identifiers); // Should log an array like ["436", "437", "445"]
+    console.log("Parsed Identifiers:", identifiers); 
 
     identifiers.forEach((identifier) => {
       registers[identifier] = registers[identifier] || [];
 
-      // Avoid duplicate entries for the same socket ID
       if (!registers[identifier].includes(socket.id)) {
         registers[identifier].push(socket.id);
       }
