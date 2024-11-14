@@ -12,6 +12,7 @@ const io = socketIo(server, {
     },
 });
 
+
 const registers = {}; // Store user identifiers and their socket IDs
 let connectedClients = 0; // Track connected clients
 
