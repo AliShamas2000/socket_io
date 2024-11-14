@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 const io = socketIo(server, {
   cors: {
-    origin: "*", 
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
@@ -28,7 +28,7 @@ io.on("connection", (socket) => {
     identifiers.forEach((identifier) => {
       registers[identifier] = registers[identifier] || [];
 
-      // Kormel ma yseer fe duplicate  socket ID
+      // hay kormel ma ykon fe duplicate
       if (!registers[identifier].includes(socket.id)) {
         registers[identifier].push(socket.id);
       }
@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
     const targetTo = data.identifier;
     const payload = data.data;
 
-    // Ensure the identifier exists in registers before filtering
+    // badna nshouf eza identifier mawjoud bel registers abel filtering
     if (registers[targetTo]) {
       const targetSockets = registers[targetTo].filter(
         (socketId) => socketId !== socket.id
@@ -73,24 +73,6 @@ io.on("connection", (socket) => {
     );
   });
 });
-
-
-function disconnectIdentifier(identifier) {
-  if (registers[identifier]) {
-    registers[identifier].forEach((socketId) => {
-      const socket = io.sockets.sockets.get(socketId);
-      if (socket) {
-        socket.disconnect(true); 
-      }
-    });
-
-    delete registers[identifier];
-    console.log(`Disconnected and removed identifier ${identifier} from registers.`);
-  } else {
-    console.log(`Identifier ${identifier} not found in registers.`);
-  }
-}
-
 
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
