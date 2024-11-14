@@ -23,19 +23,21 @@ io.on("connection", (socket) => {
   console.log(`Total connected clients: ${connectedClients}`);
 
   socket.on("register", (identifiers) => {
+    console.log("Identifiers received:", identifiers); // Log identifiers to check format
+
     identifiers = Array.isArray(identifiers) ? identifiers : [identifiers];
 
     identifiers.forEach((identifier) => {
       registers[identifier] = registers[identifier] || [];
 
-      // Kormel ma yseer fe duplicate  socket ID
+      // Avoid duplicate entries for the same socket ID
       if (!registers[identifier].includes(socket.id)) {
         registers[identifier].push(socket.id);
       }
     });
 
-    console.log("Registers: " + JSON.stringify(registers));
-  });
+    console.log("Updated Registers after register:", JSON.stringify(registers));
+  }); // <-- This closing parenthesis and semicolon were missing
 
   socket.on("message", (data) => {
     const targetTo = data.identifier;
