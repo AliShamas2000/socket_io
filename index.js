@@ -50,20 +50,29 @@ io.on("connection", (socket) => {
   }); 
 
   socket.on("message", (data) => {
-    console.log('data: ',data);
+    console.log("Received message data:", data);
+
     const targetTo = data.identifier;
     const payload = data.data;
-    console.log("targetto: ", targetTo, " payload: ", payload)
+    console.log("Target Identifier:", targetTo);
+    console.log("Message Payload:", payload);
+
     if (registers[targetTo]) {
       const targetSockets = registers[targetTo].filter(
         (socketId) => socketId !== socket.id
       );
+
+      console.log(`Target Sockets for ${targetTo}:`, targetSockets);
+
       targetSockets.forEach((socketId) => {
-        console.log(`Sending message to ${socketId}`);
+        console.log(`Sending message to socket ID ${socketId} with payload:`, payload);
         io.to(socketId).emit("message", payload);
       });
+    } else {
+      console.log(`No sockets found for identifier ${targetTo}`);
     }
-  });
+});
+
 
   socket.on("disconnect", () => {
     connectedClients--;
