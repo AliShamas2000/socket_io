@@ -26,6 +26,8 @@ io.on("connection", (socket) => {
     console.log("Identifiers received:", identifiers); 
     identifiers = Array.isArray(identifiers) ? identifiers : [identifiers];
 
+
+    console.log("masere: ", identifiers); 
     identifiers.forEach((identifier) => {
       registers[identifier] = registers[identifier] || [];
 
