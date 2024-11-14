@@ -50,9 +50,10 @@ io.on("connection", (socket) => {
   }); 
 
   socket.on("message", (data) => {
+    console.log('data: ',data);
     const targetTo = data.identifier;
     const payload = data.data;
-
+    console.log("targetto: ", targetTo, " payload: ", payload)
     if (registers[targetTo]) {
       const targetSockets = registers[targetTo].filter(
         (socketId) => socketId !== socket.id
