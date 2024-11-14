@@ -12,8 +12,8 @@ const io = socketIo(server, {
   },
 });
 
-const registers = {}; // Store user identifiers and their socket IDs
-let connectedClients = 0; // Track connected clients
+const registers = {}; 
+let connectedClients = 0; 
 
 app.use(express.json());
 
@@ -23,27 +23,24 @@ io.on("connection", (socket) => {
   console.log(`Total connected clients: ${connectedClients}`);
 
   socket.on("register", (identifiers) => {
-    console.log("Identifiers received:", identifiers); // Log identifiers to check format
-
+    console.log("Identifiers received:", identifiers); 
     identifiers = Array.isArray(identifiers) ? identifiers : [identifiers];
 
     identifiers.forEach((identifier) => {
       registers[identifier] = registers[identifier] || [];
 
-      // Avoid duplicate entries for the same socket ID
       if (!registers[identifier].includes(socket.id)) {
         registers[identifier].push(socket.id);
       }
     });
 
     console.log("Updated Registers after register:", JSON.stringify(registers));
-  }); // <-- This closing parenthesis and semicolon were missing
+  }); 
 
   socket.on("message", (data) => {
     const targetTo = data.identifier;
     const payload = data.data;
 
-    // Ensure the identifier exists in registers before filtering
     if (registers[targetTo]) {
       const targetSockets = registers[targetTo].filter(
         (socketId) => socketId !== socket.id
@@ -60,13 +57,12 @@ io.on("connection", (socket) => {
     console.log(`Client disconnected: ${socket.id}`);
     console.log(`Total connected clients: ${connectedClients}`);
 
-    // Loop through registers to remove the disconnected socket ID
     for (const identifier in registers) {
       registers[identifier] = registers[identifier].filter(
         (socketId) => socketId !== socket.id
       );
       if (registers[identifier].length === 0) {
-        delete registers[identifier]; // Clean up empty arrays
+        delete registers[identifier]; 
       }
     }
 
